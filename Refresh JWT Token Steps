@@ -1,0 +1,37 @@
+It all depends on the type of application and here is our recommended approach.
+
+Web applications:-
+
+A good pattern is to refresh the token before it expires.
+
+1: Set the token expiration to one week and refresh the token every time the user opens the web application and every one hour. 
+2: If a user doesn't open the application for more than a week, they will have to login again and this is acceptable web application UX.
+
+3: To refresh the token, your API needs a new endpoint that receives a valid, not expired JWT and returns the same signed JWT with the new expiration field. 
+Then the web application will store the token somewhere.
+
+
+Other following may work:
+
+1: Issue JWT token with relatively short expiry, say 15min.
+
+2: Application checks token expiry date before any transaction requiring a token (token contains expiry date). If token has expired, 
+then it first asks API to 'refresh' the token (this is done transparently to the UX).
+
+3: API gets token refresh request, but first checks user database to see if a 'reauth' flag has been set against that user profile (token can contain user id). 
+If the flag is present, then the token refresh is denied, otherwise a new token is issued.
+
+4: Repeat.
+
+The 'reauth' flag in the database backend would be set when, for example, the user has reset their password. The flag gets removed when the user logs in next time.
+
+
+
+Below are the one other steps to do revoke your JWT access token:
+
+1) When you do login, send 2 tokens (Access token, Refresh token) in response to client .
+2) Access token will have less expiry time and Refresh will have long expiry time .
+3) Client (Front end) will store refresh token in his local storage and access token in cookies.
+4) Client will use access token for calling apis. But when it expires, pick the refresh token from local storage and call auth server api to get the new token.
+5) Your auth server will have an api exposed which will accept refresh token and checks for its validity and return a new access token.
+6) Once refresh token is expired, User will be logged out.
